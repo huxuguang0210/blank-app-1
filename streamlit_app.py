@@ -6,6 +6,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
+import matplotlib
 
 # 设置页面配置，必须是第一个命令
 st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
@@ -21,6 +22,10 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
+# 配置matplotlib的中文字体
+matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'Arial', 'SimHei', 'Songti SC', 'KaiTi']
+matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # 模拟训练数据
 def create_model():
@@ -75,9 +80,10 @@ input_data_scaled = scaler.transform(input_data)
 # 使用SVM进行预测
 prediction_prob = model.predict_proba(input_data_scaled)[0][1]  # 获取预测生育的概率
 
-# 显示预测结果
+# 显示预测结果：生育与否及对应的概率
+生育结果 = "是" if prediction_prob >= 0.5 else "否"
 st.subheader('预测结果')
-st.markdown(f"<h3 style='text-align: center; color: #4CAF50;'>生育概率: {prediction_prob:.2f}</h3>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='text-align: center; color: #4CAF50;'>生育结果: {生育结果} (概率: {prediction_prob:.2f})</h3>", unsafe_allow_html=True)
 
 # 生成变量贡献率（Feature Importance）
 st.subheader('变量贡献率')
@@ -116,6 +122,7 @@ if uploaded_file is not None:
         
         # 将预测结果加入到原始数据
         input_df['生育概率'] = predictions_prob
+        input_df['生育结果'] = ['是' if prob >= 0.5 else '否' for prob in predictions_prob]
         
         # 显示预测结果
         st.write("预测结果：", input_df)
