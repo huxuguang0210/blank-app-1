@@ -14,7 +14,7 @@ col1, col2 = st.columns([3, 1])
 
 # 手术方式输入框
 with col1:
-    手术方式 = st.selectbox("手术方式", [0, 1])
+    手术方式("提示：0 = 不手术，1 = 手术") = st.selectbox("手术方式", [0, 1])
 with col2:
     st.write("提示：0 = 不手术，1 = 手术")
 
