@@ -4,7 +4,7 @@ import joblib
 import matplotlib.pyplot as plt
 
 # 加载训练好的模型
-model = joblib.load('fertility_model.joblib')
+model = joblib.load('svm_model.joblib')
 
 # Streamlit 输入界面
 st.title("生育结果预测")
