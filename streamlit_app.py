@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+import matplotlib.pyplot as plt
 from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
 
 # 模拟训练数据
 def create_model():
@@ -68,6 +67,24 @@ if prediction == 1:
     st.markdown("<h3 style='text-align: center; color: #4CAF50;'>预测结果：可以生育</h3>", unsafe_allow_html=True)
 else:
     st.markdown("<h3 style='text-align: center; color: #FF6347;'>预测结果：不能生育</h3>", unsafe_allow_html=True)
+
+# 生成列线图
+st.subheader('预测数据的列线图')
+
+# 创建随机数据进行列线图展示（例如：手术方式与预测结果关系）
+x_data = np.array([0, 1, 2, 3, 4, 5])  # 假设的数据：例如时间或其他因素
+y_data = np.array([0, 1, 0, 1, 1, 0])  # 假设的预测结果
+
+# 绘制列线图
+fig, ax = plt.subplots()
+ax.plot(x_data, y_data, marker='o', color='b', label='预测结果')
+ax.set_title('手术方式与预测结果的列线图', fontsize=14)
+ax.set_xlabel('手术方式', fontsize=12)
+ax.set_ylabel('预测结果', fontsize=12)
+ax.legend()
+
+# 在Streamlit中显示图表
+st.pyplot(fig)
 
 # 支持批量上传数据
 st.subheader('上传CSV文件进行批量预测')
