@@ -16,63 +16,55 @@ col1, col2 = st.columns([3, 1])
 with col1:
     手术方式 = st.selectbox("手术方式", [0, 1])
 with col2:
-    st.write("提示：手术方式：0 = 0，1 = 1")
+    st.write("提示：0 = 不手术，1 = 手术")
 
 # 手术术式输入框
 with col1:
     手术术式 = st.selectbox("手术术式", [1, 2, 3])
 with col2:
-    st.write("""
-    提示：手术术式：
-    1. 肿物切 = 1
-    2. 一侧附件切 = 2
-    3. 一侧+对侧肿物切 = 3
-    """)
+    st.write("提示：1 = 肿物切，2 = 一侧附件切，3 = 一侧+对侧肿物切")
 
 # 肿物破裂输入框
 with col1:
     肿物破裂 = st.selectbox("肿物破裂", [0, 1])
 with col2:
-    st.write("提示：肿物破裂：0 = 否，1 = 是")
+    st.write("提示：0 = 否，1 = 是")
 
 # 全面分期输入框
 with col1:
     全面分期 = st.selectbox("全面分期", [0, 1])
 with col2:
-    st.write("提示：全面分期：0 = 否（没有腹水、大网、腹膜活检），1 = 是（有这些检查）")
+    st.write("提示：0 = 否（没有腹水、大网、腹膜活检），1 = 是（有这些检查）")
 
 # 清大网输入框
 with col1:
     清大网 = st.selectbox("清大网", [0, 1])
 with col2:
-    st.write("提示：清大网：0 = 否，1 = 是")
+    st.write("提示：0 = 否，1 = 是")
 
 # 清淋巴输入框
 with col1:
     清淋巴 = st.selectbox("清淋巴", [0, 1])
 with col2:
-    st.write("提示：清淋巴：0 = 否，1 = 是")
+    st.write("提示：0 = 否，1 = 是")
 
 # 分期输入框
 with col1:
     分期 = st.selectbox("分期", [0, 1, 2, 3, 4])
 with col2:
-    st.write("""
-    提示：分期：
-    0 = IA期，1 = IB期，2 = IC期，3 = II期，4 = III期
-    """)
+    st.write("提示：0 = IA期，1 = IB期，2 = IC期，3 = II期，4 = III期")
 
 # 单侧/双侧输入框
 with col1:
     单侧双侧 = st.selectbox("单侧/双侧", [0, 1])
 with col2:
-    st.write("提示：单侧/双侧：0 = 单侧，1 = 双侧")
+    st.write("提示：0 = 单侧，1 = 双侧")
 
 # 肿瘤直径输入框
 with col1:
     肿瘤直径 = st.selectbox("肿瘤直径", [0, 1])
 with col2:
-    st.write("提示：肿瘤直径：0 = 直径＜7，1 = 直径≥7")
+    st.write("提示：0 = 直径＜7，1 = 直径≥7")
 
 # 合成输入数据
 input_data = [[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]]
