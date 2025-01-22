@@ -3,129 +3,95 @@ import pandas as pd
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
+import seaborn as sns
 
-# 设置页面标题和背景颜色
-st.set_page_config(page_title="生育概率预测", page_icon="💡", layout="wide")
-st.markdown("""
-    <style>
-        .css-1d391kg {background-color: #f0f8ff;}
-        .css-1v3fvcr {color: #444444; font-weight: bold;}
-        .css-1lsf32v {background-color: #ffcc00; padding: 10px; text-align: center;}
-    </style>
-""", unsafe_allow_html=True)
+# 示例数据生成函数
+def generate_sample_data():
+    np.random.seed(42)
+    data = {
+        "手术方式": np.random.randint(0, 2, 100),
+        "手术术式": np.random.choice([1, 2, 3], 100),
+        "肿物破裂": np.random.randint(0, 2, 100),
+        "全面分期": np.random.randint(0, 2, 100),
+        "清大网": np.random.randint(0, 2, 100),
+        "清淋巴": np.random.randint(0, 2, 100),
+        "分期": np.random.choice([0, 1, 2, 3, 4], 100),
+        "单侧/双侧": np.random.randint(0, 2, 100),
+        "肿瘤直径": np.random.randint(0, 2, 100),
+        "生育结果": np.random.randint(0, 2, 100),
+    }
+    return pd.DataFrame(data)
 
-# 样本数据（可以替换为实际数据）
-data = {
-    '手术方式': [0, 1, 0, 1, 0],
-    '手术术式': [1, 2, 1, 3, 2],
-    '肿物破裂': [0, 1, 0, 1, 0],
-    '全面分期': [1, 0, 1, 0, 1],
-    '清大网': [1, 0, 1, 1, 0],
-    '清淋巴': [0, 1, 0, 1, 0],
-    '分期': [1, 2, 3, 0, 2],
-    '单侧/双侧': [0, 1, 0, 1, 1],
-    '肿瘤直径': [1, 0, 0, 1, 1],
-    '生育概率': [0.7, 0.6, 0.4, 0.9, 0.5]  # 假设为生育概率的标签
-}
+# 训练模型
+def train_model(data):
+    X = data.drop(columns=["生育结果"])
+    y = data["生育结果"]
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-df = pd.DataFrame(data)
+    # 使用 SVM 模型
+    model = make_pipeline(StandardScaler(), SVC(kernel="linear", probability=True))
+    model.fit(X_train, y_train)
 
-# 准备数据
-X = df.drop('生育概率', axis=1)  # 特征
-y = df['生育概率']  # 目标变量
+    # 模型性能
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    return model, accuracy, model.named_steps['svc'].coef_.flatten()
 
-# 数据标准化
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# 显示界面
+def main():
+    st.title("基于 SVM 的生育结果预测系统")
 
-# 划分数据集（用于训练）
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+    st.sidebar.header("输入变量")
+    手术方式 = st.sidebar.selectbox("手术方式", [0, 1])
+    手术术式 = st.sidebar.selectbox("手术术式", [1, 2, 3])
+    肿物破裂 = st.sidebar.selectbox("肿物破裂", [0, 1])
+    全面分期 = st.sidebar.selectbox("全面分期", [0, 1])
+    清大网 = st.sidebar.selectbox("清大网", [0, 1])
+    清淋巴 = st.sidebar.selectbox("清淋巴", [0, 1])
+    分期 = st.sidebar.selectbox("分期", [0, 1, 2, 3, 4])
+    单侧双侧 = st.sidebar.selectbox("单侧/双侧", [0, 1])
+    肿瘤直径 = st.sidebar.selectbox("肿瘤直径", [0, 1])
 
-# 使用SVM模型
-model = SVC(kernel='linear', probability=True)
-model.fit(X_train, y_train)
+    sample_data = generate_sample_data()
+    model, accuracy, feature_importances = train_model(sample_data)
 
-# 在测试集上进行预测并显示准确度
-y_pred = model.predict(X_test)
-accuracy = accuracy_score(y_test, y_pred)
+    st.write(f"模型准确率: {accuracy:.2f}")
 
-# Streamlit界面
-st.title("🌟 生育概率预测 🌟")
-st.markdown("<p class='css-1lsf32v'>请输入各项变量以预测生育概率</p>", unsafe_allow_html=True)
+    # 单例预测
+    input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
+    prediction = model.predict(input_data)[0]
+    st.write(f"预测的生育结果: {'成功' if prediction == 1 else '失败'}")
 
-st.sidebar.header("🔧 输入变量")
-手术方式 = st.sidebar.selectbox('手术方式 (0=0, 1=1)', [0, 1])
-手术术式 = st.sidebar.selectbox('手术术式 (肿物切=1, 一侧附件切=2, 一侧+对侧肿物切=3)', [1, 2, 3])
-肿物破裂 = st.sidebar.selectbox('肿物破裂 (0=否, 1=是)', [0, 1])
-全面分期 = st.sidebar.selectbox('全面分期 (0=否, 1=是)', [0, 1])
-清大网 = st.sidebar.selectbox('清大网 (0=否, 1=是)', [0, 1])
-清淋巴 = st.sidebar.selectbox('清淋巴 (0=否, 1=是)', [0, 1])
-分期 = st.sidebar.selectbox('分期 (IA期=0, IB期=1, IC期=2, II期=3, III期=4)', [0, 1, 2, 3, 4])
-单侧双侧 = st.sidebar.selectbox('单侧/双侧 (单侧=0, 双侧=1)', [0, 1])
-肿瘤直径 = st.sidebar.selectbox('肿瘤直径 (≥7是1, ＜7是0)', [0, 1])
+    # 显示特征贡献率
+    st.subheader("变量贡献率")
+    feature_names = ["手术方式", "手术术式", "肿物破裂", "全面分期", "清大网", "清淋巴", "分期", "单侧/双侧", "肿瘤直径"]
+    importance_df = pd.DataFrame({"变量": feature_names, "贡献率": feature_importances})
+    importance_df = importance_df.sort_values(by="贡献率", ascending=False)
 
-# 创建用户输入的特征
-input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
-input_data_scaled = scaler.transform(input_data)
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x="贡献率", y="变量", data=importance_df, palette="viridis")
+    plt.title("特征贡献率")
+    st.pyplot(plt)
 
-# 进行预测
-predicted_probability = model.predict_proba(input_data_scaled)[0][1]
+    # 批量预测
+    st.subheader("批量预测")
+    uploaded_file = st.file_uploader("上传 CSV 文件", type="csv")
+    if uploaded_file is not None:
+        batch_data = pd.read_csv(uploaded_file)
+        predictions = model.predict(batch_data)
+        batch_data["预测结果"] = predictions
+        st.write(batch_data)
+        st.download_button(
+            label="下载预测结果", 
+            data=batch_data.to_csv(index=False), 
+            file_name="预测结果.csv", 
+            mime="text/csv"
+        )
 
-# 显示预测结果
-st.subheader("🔮 预测结果")
-st.write(f"预测的生育概率为: **{predicted_probability:.2f}**")
-
-# 计算每个变量的贡献率（通过模型系数）
-coefficients = model.coef_.flatten()
-features = X.columns
-contributions = pd.DataFrame({
-    '特征': features,
-    '系数': coefficients
-})
-
-# 绘制列线图
-fig, ax = plt.subplots(figsize=(10, 6))
-contributions.plot.bar(x='特征', y='系数', ax=ax, color='#1f77b4', legend=False)
-ax.set_title('各变量对生育概率的贡献率', fontsize=16)
-ax.set_ylabel('系数', fontsize=12)
-ax.set_xlabel('特征', fontsize=12)
-ax.grid(True, axis='y', linestyle='--', alpha=0.7)
-
-# 美化图表
-plt.xticks(rotation=45, ha='right', fontsize=10)
-plt.yticks(fontsize=10)
-st.pyplot(fig)
-
-# 显示模型准确率
-st.sidebar.markdown(f"**模型的测试集准确率: {accuracy:.2f}**")
-
-# 美化按钮和输入框样式
-st.markdown("""
-    <style>
-        .stButton button {
-            background-color: #ffcc00;
-            color: black;
-            font-size: 16px;
-            border-radius: 10px;
-            width: 100%;
-            height: 50px;
-        }
-        .stButton button:hover {
-            background-color: #ff9900;
-        }
-        .footer {
-            position: fixed;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            color: #888888;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# 添加版权信息
-st.markdown('<div class="footer">© 2025 版权所有 | 开发者: Your Name</div>', unsafe_allow_html=True)
+if __name__ == "__main__":
+    main()
