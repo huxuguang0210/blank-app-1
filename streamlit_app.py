@@ -9,17 +9,14 @@ model = joblib.load('svm_model.joblib')
 # Streamlit 输入界面
 st.title("生育结果预测")
 
-# 创建两列布局，用于显示输入框和按钮
-col1, col2 = st.columns([4, 1])
-
 # 手术方式输入框和提示按钮
-手术方式 = col1.selectbox("手术方式", [0, 1])
-if col2.button("点击查看手术方式说明"):
+手术方式 = st.selectbox("手术方式", [0, 1])
+if st.button("点击查看手术方式说明"):
     st.info("手术方式：0 = 0，1 = 1")
 
 # 手术术式输入框和提示按钮
-手术术式 = col1.selectbox("手术术式", [1, 2, 3])
-if col2.button("点击查看手术术式说明"):
+手术术式 = st.selectbox("手术术式", [1, 2, 3])
+if st.button("点击查看手术术式说明"):
     st.info("""
     1. 肿物切 = 1
     2. 一侧附件切 = 2
@@ -27,40 +24,40 @@ if col2.button("点击查看手术术式说明"):
     """)
 
 # 肿物破裂输入框和提示按钮
-肿物破裂 = col1.selectbox("肿物破裂", [0, 1])
-if col2.button("点击查看肿物破裂说明"):
+肿物破裂 = st.selectbox("肿物破裂", [0, 1])
+if st.button("点击查看肿物破裂说明"):
     st.info("肿物破裂：0 = 否，1 = 是")
 
 # 全面分期输入框和提示按钮
-全面分期 = col1.selectbox("全面分期", [0, 1])
-if col2.button("点击查看全面分期说明"):
+全面分期 = st.selectbox("全面分期", [0, 1])
+if st.button("点击查看全面分期说明"):
     st.info("全面分期：0 = 否（没有腹水、大网、腹膜活检），1 = 是（有这些检查）")
 
 # 清大网输入框和提示按钮
-清大网 = col1.selectbox("清大网", [0, 1])
-if col2.button("点击查看清大网说明"):
+清大网 = st.selectbox("清大网", [0, 1])
+if st.button("点击查看清大网说明"):
     st.info("清大网：0 = 否，1 = 是")
 
 # 清淋巴输入框和提示按钮
-清淋巴 = col1.selectbox("清淋巴", [0, 1])
-if col2.button("点击查看清淋巴说明"):
+清淋巴 = st.selectbox("清淋巴", [0, 1])
+if st.button("点击查看清淋巴说明"):
     st.info("清淋巴：0 = 否，1 = 是")
 
 # 分期输入框和提示按钮
-分期 = col1.selectbox("分期", [0, 1, 2, 3, 4])
-if col2.button("点击查看分期说明"):
+分期 = st.selectbox("分期", [0, 1, 2, 3, 4])
+if st.button("点击查看分期说明"):
     st.info("""
     分期：0 = IA期，1 = IB期，2 = IC期，3 = II期，4 = III期
     """)
 
 # 单侧/双侧输入框和提示按钮
-单侧双侧 = col1.selectbox("单侧/双侧", [0, 1])
-if col2.button("点击查看单侧/双侧说明"):
+单侧双侧 = st.selectbox("单侧/双侧", [0, 1])
+if st.button("点击查看单侧/双侧说明"):
     st.info("单侧/双侧：0 = 单侧，1 = 双侧")
 
 # 肿瘤直径输入框和提示按钮
-肿瘤直径 = col1.selectbox("肿瘤直径", [0, 1])
-if col2.button("点击查看肿瘤直径说明"):
+肿瘤直径 = st.selectbox("肿瘤直径", [0, 1])
+if st.button("点击查看肿瘤直径说明"):
     st.info("肿瘤直径：0 = 直径＜7，1 = 直径≥7")
 
 # 合成输入数据
