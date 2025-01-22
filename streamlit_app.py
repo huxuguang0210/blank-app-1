@@ -7,6 +7,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 
+# 设置页面配置，必须是第一个命令
+st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
+
 # 添加中文支持的CSS
 st.markdown("""
     <style>
@@ -40,9 +43,6 @@ def create_model():
 
 # 创建模型和标准化器
 model, scaler, X_train_scaled, y_train = create_model()
-
-# Streamlit页面
-st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
 
 # 页面头部
 st.markdown("""
