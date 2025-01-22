@@ -27,10 +27,10 @@ def create_model():
     model = SVC(kernel='linear', probability=True)
     model.fit(X_train_scaled, y_train)
     
-    return model, scaler
+    return model, scaler, X_train_scaled, y_train
 
 # 创建模型和标准化器
-model, scaler = create_model()
+model, scaler, X_train_scaled, y_train = create_model()
 
 # Streamlit页面
 st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
@@ -54,7 +54,7 @@ st.sidebar.header('输入数据进行预测')
 清淋巴 = st.sidebar.selectbox('清淋巴', [0, 1])
 分期 = st.sidebar.selectbox('分期', [0, 1, 2, 3, 4])
 单侧双侧 = st.sidebar.selectbox('单侧/双侧', [0, 1])
-肿瘤直径 = st.sidebar.selectbox('肿瘸直径', [0, 1])
+肿瘤直径 = st.sidebar.selectbox('肿瘤直径', [0, 1])
 
 # 获取用户输入的数据并标准化
 input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
@@ -71,7 +71,7 @@ st.markdown(f"<h3 style='text-align: center; color: #4CAF50;'>生育概率: {pre
 st.subheader('变量贡献率')
 
 # 计算各个特征的贡献率
-result = permutation_importance(model, scaler.transform(np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])), y_train)
+result = permutation_importance(model, X_train_scaled, y_train, n_repeats=10, random_state=42)
 importance = result.importances_mean
 
 # 绘制贡献率图
