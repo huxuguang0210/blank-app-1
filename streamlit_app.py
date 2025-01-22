@@ -11,7 +11,7 @@ import matplotlib
 # 设置页面配置，必须是第一个命令
 st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
 
-# 添加中文和特殊字符支持的CSS
+# 添加中文支持的CSS
 st.markdown("""
     <style>
         body {
@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 配置matplotlib的中文字体
-matplotlib.rcParams['font.sans-serif'] = ['SimHei']
+matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'Arial', 'SimHei', 'Songti SC', 'KaiTi']
 matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # 模拟训练数据
