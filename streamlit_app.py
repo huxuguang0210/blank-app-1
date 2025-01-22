@@ -24,7 +24,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 配置matplotlib的中文字体
-matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'Arial', 'SimHei', 'Songti SC', 'KaiTi']
+matplotlib.rcParams['font.sans-serif'] = ['SimHei']
 matplotlib.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # 模拟训练数据
