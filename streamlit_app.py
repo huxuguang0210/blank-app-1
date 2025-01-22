@@ -7,6 +7,16 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
 
+# 设置页面标题和背景颜色
+st.set_page_config(page_title="生育概率预测", page_icon="💡", layout="wide")
+st.markdown("""
+    <style>
+        .css-1d391kg {background-color: #f0f8ff;}
+        .css-1v3fvcr {color: #444444; font-weight: bold;}
+        .css-1lsf32v {background-color: #ffcc00; padding: 10px; text-align: center;}
+    </style>
+""", unsafe_allow_html=True)
+
 # 样本数据（可以替换为实际数据）
 data = {
     '手术方式': [0, 1, 0, 1, 0],
@@ -43,9 +53,10 @@ y_pred = model.predict(X_test)
 accuracy = accuracy_score(y_test, y_pred)
 
 # Streamlit界面
-st.title("生育概率预测")
+st.title("🌟 生育概率预测 🌟")
+st.markdown("<p class='css-1lsf32v'>请输入各项变量以预测生育概率</p>", unsafe_allow_html=True)
 
-st.sidebar.header("输入变量")
+st.sidebar.header("🔧 输入变量")
 手术方式 = st.sidebar.selectbox('手术方式 (0=0, 1=1)', [0, 1])
 手术术式 = st.sidebar.selectbox('手术术式 (肿物切=1, 一侧附件切=2, 一侧+对侧肿物切=3)', [1, 2, 3])
 肿物破裂 = st.sidebar.selectbox('肿物破裂 (0=否, 1=是)', [0, 1])
@@ -64,7 +75,8 @@ input_data_scaled = scaler.transform(input_data)
 predicted_probability = model.predict_proba(input_data_scaled)[0][1]
 
 # 显示预测结果
-st.write(f"预测的生育概率: {predicted_probability:.2f}")
+st.subheader("🔮 预测结果")
+st.write(f"预测的生育概率为: **{predicted_probability:.2f}**")
 
 # 计算每个变量的贡献率（通过模型系数）
 coefficients = model.coef_.flatten()
@@ -75,11 +87,45 @@ contributions = pd.DataFrame({
 })
 
 # 绘制列线图
-fig, ax = plt.subplots()
-contributions.plot.bar(x='特征', y='系数', ax=ax)
-ax.set_title('每个变量的贡献率')
-ax.set_ylabel('系数')
+fig, ax = plt.subplots(figsize=(10, 6))
+contributions.plot.bar(x='特征', y='系数', ax=ax, color='#1f77b4', legend=False)
+ax.set_title('各变量对生育概率的贡献率', fontsize=16)
+ax.set_ylabel('系数', fontsize=12)
+ax.set_xlabel('特征', fontsize=12)
+ax.grid(True, axis='y', linestyle='--', alpha=0.7)
+
+# 美化图表
+plt.xticks(rotation=45, ha='right', fontsize=10)
+plt.yticks(fontsize=10)
 st.pyplot(fig)
 
 # 显示模型准确率
-st.write(f"模型的测试集准确率: {accuracy:.2f}")
+st.sidebar.markdown(f"**模型的测试集准确率: {accuracy:.2f}**")
+
+# 美化按钮和输入框样式
+st.markdown("""
+    <style>
+        .stButton button {
+            background-color: #ffcc00;
+            color: black;
+            font-size: 16px;
+            border-radius: 10px;
+            width: 100%;
+            height: 50px;
+        }
+        .stButton button:hover {
+            background-color: #ff9900;
+        }
+        .footer {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# 添加版权信息
+st.markdown('<div class="footer">© 2025 版权所有 | 开发者: Your Name</div>', unsafe_allow_html=True)
