@@ -4,14 +4,27 @@ import joblib
 import matplotlib.pyplot as plt
 
 # 加载训练好的模型
-model = joblib.load('svm_model.joblib')
+model = joblib.load('fertility_model.joblib')
 
 # Streamlit 输入界面
 st.title("生育结果预测")
 
 # 输入变量
 手术方式 = st.selectbox("手术方式", [0, 1])
-手术术式 = st.selectbox("手术术式", [1, 2, 3])
+
+# 提示手术术式选项
+手术术式 = st.selectbox(
+    "手术术式",
+    [1, 2, 3],
+    format_func=lambda x: "肿物切" if x == 1 else ("一侧附件切" if x == 2 else "一侧+对侧肿物切")
+)
+
+# 显示选择的提示信息
+st.write("手术术式选项说明：")
+st.write("1. 肿物切 = 1")
+st.write("2. 一侧附件切 = 2")
+st.write("3. 一侧+对侧肿物切 = 3")
+
 肿物破裂 = st.selectbox("肿物破裂", [0, 1])
 全面分期 = st.selectbox("全面分期", [0, 1])
 清大网 = st.selectbox("清大网", [0, 1])
