@@ -4,6 +4,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.inspection import permutation_importance
 
 # 模拟训练数据
 def create_model():
@@ -22,7 +24,7 @@ def create_model():
     X_train_scaled = scaler.fit_transform(X_train)
     
     # 使用支持向量机（SVM）训练模型
-    model = SVC(kernel='linear')
+    model = SVC(kernel='linear', probability=True)
     model.fit(X_train_scaled, y_train)
     
     return model, scaler
@@ -31,12 +33,12 @@ def create_model():
 model, scaler = create_model()
 
 # Streamlit页面
-st.set_page_config(page_title="是否生育预测", page_icon=":female-doctor:", layout="wide")
+st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
 
 # 页面头部
 st.markdown("""
     <h1 style="text-align: center; color: #4CAF50;">生育预测系统</h1>
-    <p style="text-align: center; font-size: 18px;">根据手术信息预测是否能生育</p>
+    <p style="text-align: center; font-size: 18px;">根据手术信息预测生育概率</p>
     <hr style="border: 1px solid #4CAF50;">
 """, unsafe_allow_html=True)
 
@@ -52,38 +54,34 @@ st.sidebar.header('输入数据进行预测')
 清淋巴 = st.sidebar.selectbox('清淋巴', [0, 1])
 分期 = st.sidebar.selectbox('分期', [0, 1, 2, 3, 4])
 单侧双侧 = st.sidebar.selectbox('单侧/双侧', [0, 1])
-肿瘤直径 = st.sidebar.selectbox('肿瘤直径', [0, 1])
+肿瘤直径 = st.sidebar.selectbox('肿瘸直径', [0, 1])
 
 # 获取用户输入的数据并标准化
 input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
 input_data_scaled = scaler.transform(input_data)
 
 # 使用SVM进行预测
-prediction = model.predict(input_data_scaled)
+prediction_prob = model.predict_proba(input_data_scaled)[0][1]  # 获取预测生育的概率
 
 # 显示预测结果
 st.subheader('预测结果')
-if prediction == 1:
-    st.markdown("<h3 style='text-align: center; color: #4CAF50;'>预测结果：可以生育</h3>", unsafe_allow_html=True)
-else:
-    st.markdown("<h3 style='text-align: center; color: #FF6347;'>预测结果：不能生育</h3>", unsafe_allow_html=True)
+st.markdown(f"<h3 style='text-align: center; color: #4CAF50;'>生育概率: {prediction_prob:.2f}</h3>", unsafe_allow_html=True)
 
-# 生成列线图
-st.subheader('预测数据的列线图')
+# 生成变量贡献率（Feature Importance）
+st.subheader('变量贡献率')
 
-# 创建随机数据进行列线图展示（例如：手术方式与预测结果关系）
-x_data = np.array([0, 1, 2, 3, 4, 5])  # 假设的数据：例如时间或其他因素
-y_data = np.array([0, 1, 0, 1, 1, 0])  # 假设的预测结果
+# 计算各个特征的贡献率
+result = permutation_importance(model, scaler.transform(np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])), y_train)
+importance = result.importances_mean
 
-# 绘制列线图
+# 绘制贡献率图
+features = ['手术方式', '手术术式', '肿物破裂', '全面分期', '清大网', '清淋巴', '分期', '单侧双侧', '肿瘤直径']
 fig, ax = plt.subplots()
-ax.plot(x_data, y_data, marker='o', color='b', label='预测结果')
-ax.set_title('手术方式与预测结果的列线图', fontsize=14)
-ax.set_xlabel('手术方式', fontsize=12)
-ax.set_ylabel('预测结果', fontsize=12)
-ax.legend()
+ax.barh(features, importance, color='skyblue')
+ax.set_xlabel('贡献率')
+ax.set_title('每个变量对生育概率的贡献率')
 
-# 在Streamlit中显示图表
+# 显示贡献率图
 st.pyplot(fig)
 
 # 支持批量上传数据
@@ -102,10 +100,10 @@ if uploaded_file is not None:
         input_data_scaled = scaler.transform(input_df)
         
         # 进行预测
-        predictions = model.predict(input_data_scaled)
+        predictions_prob = model.predict_proba(input_data_scaled)[:, 1]
         
         # 将预测结果加入到原始数据
-        input_df['是否生育'] = ['是' if p == 1 else '否' for p in predictions]
+        input_df['生育概率'] = predictions_prob
         
         # 显示预测结果
         st.write("预测结果：", input_df)
