@@ -10,7 +10,7 @@ model = joblib.load('svm_model.joblib')
 st.title("生育结果预测")
 
 # 创建两列布局，将手术术式选择框和提示按钮放在同一行
-col1, col2 = st.columns([4, 1])  # 两列，左列宽度较大，右列用于按钮
+col1, col2 = st.columns([4, 1])  # 左列为下拉框，右列为按钮
 
 # 手术方式
 手术方式 = st.selectbox("手术方式", [0, 1])
@@ -48,19 +48,4 @@ if st.button('预测生育结果'):
 
     # 显示列线图
     fig, ax = plt.subplots()
-    ax.bar([0, 1], prediction_prob[0], tick_label=["否", "是"], color=["red", "green"])
-    ax.set_ylabel('预测概率')
-    ax.set_title('生育结果预测概率')
-    st.pyplot(fig)
-
-# 批量上传文件
-st.title("批量上传文件")
-uploaded_file = st.file_uploader("上传 CSV 文件", type="csv")
-if uploaded_file is not None:
-    batch_data = pd.read_csv(uploaded_file)
-    predictions = model.predict(batch_data[['手术方式', '手术术式', '肿物破裂', '全面分期', '清大网', '清淋巴', '分期', '单侧双侧', '肿瘤直径']])
-    batch_data['生育结果'] = ['是' if x == 1 else '否' for x in predictions]
-    st.write(batch_data)
-
-# 添加版权所有信息
-st.markdown("版权所有 © 2025")
+  
