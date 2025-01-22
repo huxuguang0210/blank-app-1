@@ -10,11 +10,14 @@ from sklearn.inspection import permutation_importance
 # 设置页面配置，必须是第一个命令
 st.set_page_config(page_title="生育预测系统", page_icon=":female-doctor:", layout="wide")
 
-# 添加中文支持的CSS
+# 添加中文和特殊字符支持的CSS
 st.markdown("""
     <style>
         body {
-            font-family: "Microsoft YaHei", "Arial", sans-serif;
+            font-family: "Microsoft YaHei", "Arial", "SimHei", "Songti SC", "KaiTi", sans-serif;
+        }
+        h1, h2, h3, p {
+            font-family: "Microsoft YaHei", "Arial", "SimHei", "Songti SC", "KaiTi", sans-serif;
         }
     </style>
 """, unsafe_allow_html=True)
