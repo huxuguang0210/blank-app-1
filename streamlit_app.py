@@ -32,7 +32,14 @@ def main():
     # 单例预测
     input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
     prediction = model.predict(input_data)[0]
-    st.write(f"预测的生育结果: {'成功' if prediction == 1 else '失败'}")
+    prediction_probability = model.decision_function(input_data) if hasattr(model, 'decision_function') else None
+
+    if prediction_probability is not None:
+        probability_display = f" ({prediction_probability[0]:.2f})"
+    else:
+        probability_display = ""
+
+    st.write(f"预测的生育结果: {'是' if prediction == 1 else '否'}{probability_display}")
 
     # 显示特征贡献率
     st.subheader("变量贡献率")
@@ -42,9 +49,14 @@ def main():
         importance_df = pd.DataFrame({"变量": feature_names, "贡献率": feature_importances})
         importance_df = importance_df.sort_values(by="贡献率", ascending=False)
 
+        # 绘制列线图
         plt.figure(figsize=(10, 6))
-        sns.barplot(x="贡献率", y="变量", data=importance_df, palette="viridis")
-        plt.title("特征贡献率")
+        plt.plot(importance_df["变量"], importance_df["贡献率"], marker="o", linestyle="-", color="b")
+        plt.xlabel("变量")
+        plt.ylabel("贡献率")
+        plt.title("特征贡献率 (列线图)")
+        plt.xticks(rotation=45)
+        plt.grid(True)
         st.pyplot(plt)
     else:
         st.write("当前模型不支持特征贡献率显示。")
@@ -55,7 +67,10 @@ def main():
     if uploaded_file is not None:
         batch_data = pd.read_csv(uploaded_file)
         predictions = model.predict(batch_data)
-        batch_data["预测结果"] = predictions
+        if hasattr(model, 'decision_function'):
+            probabilities = model.decision_function(batch_data)
+            batch_data["预测概率"] = probabilities
+        batch_data["预测结果"] = ["是" if pred == 1 else "否" for pred in predictions]
         st.write(batch_data)
         st.download_button(
             label="下载预测结果", 
@@ -63,6 +78,9 @@ def main():
             file_name="预测结果.csv", 
             mime="text/csv"
         )
+
+    st.markdown("---")
+    st.markdown("版权所有 © 2025 生育预测系统")
 
 if __name__ == "__main__":
     main()
