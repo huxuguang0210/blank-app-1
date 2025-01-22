@@ -49,12 +49,12 @@ st.sidebar.header('输入数据进行预测')
 手术方式 = st.sidebar.selectbox('手术方式', [0, 1])
 手术术式 = st.sidebar.selectbox('手术术式', [1, 2, 3])
 肿物破裂 = st.sidebar.selectbox('肿物破裂', [0, 1])
-全面分期 = st.sidebar.selectbox('全面分期', [0, 1])
+全面分期 = st.sidebar.selectbox('全面分期（腹水+大网+腹膜活检）', [0, 1])
 清大网 = st.sidebar.selectbox('清大网', [0, 1])
 清淋巴 = st.sidebar.selectbox('清淋巴', [0, 1])
 分期 = st.sidebar.selectbox('分期', [0, 1, 2, 3, 4])
 单侧双侧 = st.sidebar.selectbox('单侧/双侧', [0, 1])
-肿瘤直径 = st.sidebar.selectbox('肿瘤直径', [0, 1])
+肿瘤直径 = st.sidebar.selectbox('肿瘤直径（直径≥7）', [0, 1])
 
 # 获取用户输入的数据并标准化
 input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
@@ -76,7 +76,7 @@ importance = result.importances_mean
 
 # 绘制贡献率图
 features = ['手术方式', '手术术式', '肿物破裂', '全面分期', '清大网', '清淋巴', '分期', '单侧双侧', '肿瘤直径']
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=(8, 6))
 ax.barh(features, importance, color='skyblue')
 ax.set_xlabel('贡献率')
 ax.set_title('每个变量对生育概率的贡献率')
