@@ -64,7 +64,23 @@ st.sidebar.header('输入数据进行预测')
 
 # 在侧边栏中创建输入框
 手术方式 = st.sidebar.selectbox('手术方式', [0, 1])
-手术术式 = st.sidebar.selectbox('手术术式', [1, 2, 3])
+手术术式 = st.sidebar.selectbox(
+    '手术术式',
+    [1, 2, 3],
+    format_func=lambda x: {
+        1: "肿物切",
+        2: "一侧附件切",
+        3: "一侧+对侧肿物切"
+    }.get(x)
+)
+
+st.sidebar.markdown("""
+    **手术术式说明：**
+    - 肿物切 = 1
+    - 一侧附件切 = 2
+    - 一侧+对侧肿物切 = 3
+""")
+
 肿物破裂 = st.sidebar.selectbox('肿物破裂', [0, 1])
 全面分期 = st.sidebar.selectbox('全面分期（腹水+大网+腹膜活检）', [0, 1])
 清大网 = st.sidebar.selectbox('清大网', [0, 1])
