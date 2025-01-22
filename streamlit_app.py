@@ -1,46 +1,13 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 示例数据生成函数
-def generate_sample_data():
-    np.random.seed(42)
-    data = {
-        "手术方式": np.random.randint(0, 2, 100),
-        "手术术式": np.random.choice([1, 2, 3], 100),
-        "肿物破裂": np.random.randint(0, 2, 100),
-        "全面分期": np.random.randint(0, 2, 100),
-        "清大网": np.random.randint(0, 2, 100),
-        "清淋巴": np.random.randint(0, 2, 100),
-        "分期": np.random.choice([0, 1, 2, 3, 4], 100),
-        "单侧/双侧": np.random.randint(0, 2, 100),
-        "肿瘤直径": np.random.randint(0, 2, 100),
-        "生育结果": np.random.randint(0, 2, 100),
-    }
-    return pd.DataFrame(data)
-
-# 训练模型
-def train_model(data):
-    X = data.drop(columns=["生育结果"])
-    y = data["生育结果"]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # 使用 SVM 模型
-    model = make_pipeline(StandardScaler(), SVC(kernel="linear", probability=True))
-    model.fit(X_train, y_train)
-
-    # 模型性能
-    y_pred = model.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    
-    return model, accuracy, model.named_steps['svc'].coef_.flatten()
+# 加载训练好的模型
+def load_model():
+    return joblib.load("svm_model.joblib")
 
 # 显示界面
 def main():
@@ -57,10 +24,10 @@ def main():
     单侧双侧 = st.sidebar.selectbox("单侧/双侧", [0, 1])
     肿瘤直径 = st.sidebar.selectbox("肿瘤直径", [0, 1])
 
-    sample_data = generate_sample_data()
-    model, accuracy, feature_importances = train_model(sample_data)
-
-    st.write(f"模型准确率: {accuracy:.2f}")
+    model = load_model()
+    
+    st.subheader("模型信息")
+    st.write("已加载训练好的 SVM 模型。")
 
     # 单例预测
     input_data = np.array([[手术方式, 手术术式, 肿物破裂, 全面分期, 清大网, 清淋巴, 分期, 单侧双侧, 肿瘤直径]])
@@ -70,13 +37,17 @@ def main():
     # 显示特征贡献率
     st.subheader("变量贡献率")
     feature_names = ["手术方式", "手术术式", "肿物破裂", "全面分期", "清大网", "清淋巴", "分期", "单侧/双侧", "肿瘤直径"]
-    importance_df = pd.DataFrame({"变量": feature_names, "贡献率": feature_importances})
-    importance_df = importance_df.sort_values(by="贡献率", ascending=False)
+    if hasattr(model, 'coef_'):
+        feature_importances = model.coef_.flatten()
+        importance_df = pd.DataFrame({"变量": feature_names, "贡献率": feature_importances})
+        importance_df = importance_df.sort_values(by="贡献率", ascending=False)
 
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x="贡献率", y="变量", data=importance_df, palette="viridis")
-    plt.title("特征贡献率")
-    st.pyplot(plt)
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x="贡献率", y="变量", data=importance_df, palette="viridis")
+        plt.title("特征贡献率")
+        st.pyplot(plt)
+    else:
+        st.write("当前模型不支持特征贡献率显示。")
 
     # 批量预测
     st.subheader("批量预测")
