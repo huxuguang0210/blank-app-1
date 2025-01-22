@@ -7,6 +7,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.inspection import permutation_importance
 
+# 添加中文支持的CSS
+st.markdown("""
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "Arial", sans-serif;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # 模拟训练数据
 def create_model():
     # 示例数据：手术方式、手术术式、肿物破裂等
