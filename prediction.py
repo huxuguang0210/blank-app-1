@@ -7,7 +7,7 @@ from scipy.stats import norm
 # 加载训练好的 SVM 模型
 @st.cache_resource
 def load_model():
-    return joblib.load("trained_model.joblib")  # 替换为您的模型路径
+    return joblib.load("svm_model.joblib")  # 替换为您的模型路径
 
 model = load_model()
 
