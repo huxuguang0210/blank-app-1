@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
+from sklearn.inspection import permutation_importance
 
 # Load the trained SVM model
 model = joblib.load('svm_model.joblib')  # Ensure the model file is in the same directory or provide the correct path
@@ -14,14 +15,14 @@ This application predicts fertility outcomes based on the following input variab
 - **Surgical Method** (0=0, 1=1)
 - **Surgical Procedure** (Tumor Resection=1, Unilateral Adnexectomy=2, Unilateral + Contralateral Tumor Resection=3)
 - **Tumor Rupture** (0=No, 1=Yes)
-- **Comprehensive Staging** (0=No, 1=Yes)
+- **Comprehensive Staging** (Ascites + Omentum + Peritoneal Biopsy) (0=No, 1=Yes)
 - **Omentum Resection** (0=No, 1=Yes)
 - **Lymphadenectomy** (0=No, 1=Yes)
 - **Staging** (Stage IA=0, Stage IB=1, Stage IC=2, Stage II=3, Stage III=4)
 - **Unilateral/Bilateral** (0=Unilateral, 1=Bilateral)
 - **Tumor Diameter** (Diameter ≥7 cm=1, <7 cm=0)
 
-Upload a CSV file or fill in the form to predict fertility outcomes.
+Upload a CSV file or fill in the form to predict fertility outcomes. The application also displays the contribution of each variable to the prediction.
 """)
 
 # Input form for single prediction
@@ -62,6 +63,30 @@ if submitted:
     result = "Yes" if prediction[0] == 1 else "No"
     st.write(f"**Fertility Outcome:** {result}")
     st.write(f"**Probability:** {probability[0][prediction[0]]:.2f}")
+
+    # Display feature contribution (using permutation importance if available)
+    st.subheader("Variable Contribution")
+    try:
+        importance = permutation_importance(model, input_data, [prediction[0]], scoring='accuracy')
+        importance_df = pd.DataFrame({
+            'Variable': [
+                "Surgical Method", "Surgical Procedure", "Tumor Rupture",
+                "Comprehensive Staging", "Omentum Resection", "Lymphadenectomy",
+                "Staging", "Unilateral/Bilateral", "Tumor Diameter"
+            ],
+            'Importance': importance.importances_mean
+        }).sort_values(by='Importance', ascending=False)
+
+        st.write(importance_df)
+
+        # Plot feature importance
+        fig, ax = plt.subplots()
+        ax.barh(importance_df['Variable'], importance_df['Importance'])
+        ax.set_xlabel("Importance")
+        ax.set_title("Variable Contribution to Prediction")
+        st.pyplot(fig)
+    except Exception as e:
+        st.write("Unable to calculate variable contribution:", e)
 
 # File upload for batch prediction
 st.header("Batch Input Prediction")
