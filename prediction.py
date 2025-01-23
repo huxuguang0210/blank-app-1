@@ -11,47 +11,48 @@ model = joblib.load('svm_model.joblib')  # Ensure the model file is in the same 
 # Title and description
 st.title("SVM-Based Fertility Outcome Prediction")
 st.markdown("""
-This application predicts fertility outcomes based on the following input variables:
-- **Surgical Method** (0=0, 1=1)
-- **Surgical Procedure** (Tumor Resection=1, Unilateral Adnexectomy=2, Unilateral + Contralateral Tumor Resection=3)
-- **Tumor Rupture** (0=No, 1=Yes)
-- **Comprehensive Staging** (Ascites + Omentum + Peritoneal Biopsy) (0=No, 1=Yes)
-- **Omentum Resection** (0=No, 1=Yes)
-- **Lymphadenectomy** (0=No, 1=Yes)
-- **Staging** (Stage IA=0, Stage IB=1, Stage IC=2, Stage II=3, Stage III=4)
-- **Unilateral/Bilateral** (0=Unilateral, 1=Bilateral)
-- **Tumor Diameter** (Diameter ≥7 cm=1, <7 cm=0)
-
-Upload a CSV file or fill in the form to predict fertility outcomes. The application also displays the contribution of each variable to the prediction.
+This application predicts fertility outcomes based on the following input variables. Select the appropriate option from the dropdown menus below:
 """)
 
 # Input form for single prediction
 st.header("Single Input Prediction")
 with st.form("single_input_form"):
-    surgical_method = st.selectbox("Surgical Method", [0, 1])
-    surgical_procedure = st.selectbox("Surgical Procedure", [1, 2, 3])
-    tumor_rupture = st.selectbox("Tumor Rupture", [0, 1])
-    comprehensive_staging = st.selectbox("Comprehensive Staging", [0, 1])
-    omentum_resection = st.selectbox("Omentum Resection", [0, 1])
-    lymphadenectomy = st.selectbox("Lymphadenectomy", [0, 1])
-    staging = st.selectbox("Staging", [0, 1, 2, 3, 4])
-    unilateral_bilateral = st.selectbox("Unilateral/Bilateral", [0, 1])
-    tumor_diameter = st.selectbox("Tumor Diameter", [0, 1])
+    surgical_method = st.selectbox("Surgical Method", ["0=0", "1=1"], format_func=lambda x: x.split('=')[1])
+    surgical_procedure = st.selectbox(
+        "Surgical Procedure",
+        ["1=Tumor Resection", "2=Unilateral Adnexectomy", "3=Unilateral + Contralateral Tumor Resection"],
+        format_func=lambda x: x.split('=')[1]
+    )
+    tumor_rupture = st.selectbox("Tumor Rupture", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
+    comprehensive_staging = st.selectbox(
+        "Comprehensive Staging (Ascites + Omentum + Peritoneal Biopsy)",
+        ["0=No", "1=Yes"],
+        format_func=lambda x: x.split('=')[1]
+    )
+    omentum_resection = st.selectbox("Omentum Resection", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
+    lymphadenectomy = st.selectbox("Lymphadenectomy", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
+    staging = st.selectbox(
+        "Staging",
+        ["0=Stage IA", "1=Stage IB", "2=Stage IC", "3=Stage II", "4=Stage III"],
+        format_func=lambda x: x.split('=')[1]
+    )
+    unilateral_bilateral = st.selectbox("Unilateral/Bilateral", ["0=Unilateral", "1=Bilateral"], format_func=lambda x: x.split('=')[1])
+    tumor_diameter = st.selectbox("Tumor Diameter", ["0=Diameter < 7 cm", "1=Diameter ≥ 7 cm"], format_func=lambda x: x.split('=')[1])
 
     submitted = st.form_submit_button("Predict")
 
 if submitted:
-    # Create input array for prediction
+    # Extract numerical values from the selected options
     input_data = np.array([[
-        surgical_method,
-        surgical_procedure,
-        tumor_rupture,
-        comprehensive_staging,
-        omentum_resection,
-        lymphadenectomy,
-        staging,
-        unilateral_bilateral,
-        tumor_diameter
+        int(surgical_method.split('=')[0]),
+        int(surgical_procedure.split('=')[0]),
+        int(tumor_rupture.split('=')[0]),
+        int(comprehensive_staging.split('=')[0]),
+        int(omentum_resection.split('=')[0]),
+        int(lymphadenectomy.split('=')[0]),
+        int(staging.split('=')[0]),
+        int(unilateral_bilateral.split('=')[0]),
+        int(tumor_diameter.split('=')[0])
     ]])
 
     # Predict
