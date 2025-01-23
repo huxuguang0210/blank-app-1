@@ -15,24 +15,25 @@ model = load_model()
 def calculate_confidence_interval(proba, confidence=0.95):
     z = norm.ppf((1 + confidence) / 2)  # Z-score
     margin = z * np.sqrt((proba * (1 - proba)) / len(proba))
-    lower_bound = proba - margin
-    upper_bound = proba + margin
+    lower_bound = np.clip(proba - margin, 0, 1)  # 确保概率区间在 [0, 1]
+    upper_bound = np.clip(proba + margin, 0, 1)
     return lower_bound, upper_bound
 
 # 单样本预测函数
 def predict_single(data):
     proba = model.predict_proba([data])[0][1]  # 返回怀孕概率 (Pregnant Result)
-    return proba
+    lower, upper = calculate_confidence_interval(np.array([proba]))
+    return lower[0], upper[0]  # 返回区间
 
 # 批量预测函数
 def predict_batch(data):
     probabilities = model.predict_proba(data)[:, 1]  # 返回怀孕概率
     lower, upper = calculate_confidence_interval(probabilities)
-    return probabilities, lower, upper
+    return lower, upper
 
 # Streamlit 应用界面
 st.title("怀孕结果预测系统")
-st.write("基于SVM模型的预测系统，用于评估 `Pregnant Result` 的概率。")
+st.write("基于SVM模型的预测系统，用于评估 `Pregnant Result` 的概率（以概率区间形式展示）。")
 
 # 单样本输入
 st.subheader("单样本预测")
@@ -64,10 +65,8 @@ if submit_single:
         unilateral_bilateral,
         tumor_diameter
     ]
-    proba = predict_single(input_data)
-    lower, upper = calculate_confidence_interval(np.array([proba]))
-    st.success(f"怀孕概率预测: {proba:.2%}")
-    st.info(f"95% 置信区间: [{lower[0]:.2%}, {upper[0]:.2%}]")
+    lower, upper = predict_single(input_data)
+    st.success(f"怀孕概率预测区间: [{lower:.2%}, {upper:.2%}]")
 
 # 批量文件上传预测
 st.subheader("批量预测")
@@ -77,11 +76,13 @@ if uploaded_file:
     st.write("上传的数据：", data.head())
 
     if st.button("开始批量预测"):
-        probabilities, lower, upper = predict_batch(data.values)
-        data['Pregnant Probability'] = probabilities
+        lower, upper = predict_batch(data.values)
         data['Lower CI'] = lower
         data['Upper CI'] = upper
-        st.write("预测结果：", data)
+        data['Predicted Interval'] = data.apply(
+            lambda row: f"[{row['Lower CI']:.2%}, {row['Upper CI']:.2%}]", axis=1
+        )
+        st.write("预测结果：", data[['Predicted Interval']])
         
         # 下载预测结果
         csv = data.to_csv(index=False)
