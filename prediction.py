@@ -2,92 +2,81 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-from scipy.stats import norm
+from sklearn.utils import resample
 
-# 加载训练好的 SVM 模型
-@st.cache_resource
-def load_model():
-    return joblib.load("svm_model.joblib")  # 替换为您的模型路径
+# Load trained SVM model
+model = joblib.load("svm_model.joblib")
 
-model = load_model()
-
-# 定义 95% 置信区间计算函数
-def calculate_confidence_interval(proba, confidence=0.95):
-    z = norm.ppf((1 + confidence) / 2)  # Z-score
-    margin = z * np.sqrt((proba * (1 - proba)) / len(proba))
-    lower_bound = np.clip(proba - margin, 0, 1)  # 确保概率区间在 [0, 1]
-    upper_bound = np.clip(proba + margin, 0, 1)
-    return lower_bound, upper_bound
-
-# 单样本预测函数
-def predict_single(data):
-    proba = model.predict_proba([data])[0][1]  # 返回怀孕概率 (Pregnant Result)
-    lower, upper = calculate_confidence_interval(np.array([proba]))
-    return lower[0], upper[0]  # 返回区间
-
-# 批量预测函数
-def predict_batch(data):
-    probabilities = model.predict_proba(data)[:, 1]  # 返回怀孕概率
-    lower, upper = calculate_confidence_interval(probabilities)
+# Define function to calculate 95% Confidence Interval
+def calculate_confidence_interval(predictions, confidence=0.95):
+    lower = np.percentile(predictions, (1 - confidence) / 2 * 100)
+    upper = np.percentile(predictions, (1 + confidence) / 2 * 100)
     return lower, upper
 
-# Streamlit 应用界面
-st.title("怀孕结果预测系统")
-st.write("基于SVM模型的预测系统，用于评估 `Pregnant Result` 的概率（以概率区间形式展示）。")
+# Function to make predictions
+def predict_single(data):
+    probability = model.predict_proba([data])[0, 1]  # Assuming binary classification
+    return probability
 
-# 单样本输入
-st.subheader("单样本预测")
-with st.form("single_input"):
-    col1, col2 = st.columns(2)
-    with col1:
-        surgical_method = st.selectbox("Surgical Method (0=0, 1=1)", [0, 1])
-        surgical_procedure = st.selectbox("Surgical Procedure", [1, 2, 3])
-        tumor_rupture = st.selectbox("Tumor Rupture (0=No, 1=Yes)", [0, 1])
-        comprehensive_staging = st.selectbox("Comprehensive Staging (0=No, 1=Yes)", [0, 1])
-    with col2:
-        omentum_resection = st.selectbox("Omentum Resection (0=No, 1=Yes)", [0, 1])
-        lymphadenectomy = st.selectbox("Lymphadenectomy (0=No, 1=Yes)", [0, 1])
-        staging = st.selectbox("Staging", [0, 1, 2, 3, 4])
-        unilateral_bilateral = st.selectbox("Unilateral/Bilateral", [0, 1])
-        tumor_diameter = st.selectbox("Tumor Diameter (Diameter ≥7 cm=1, <7 cm=0)", [0, 1])
-    
-    submit_single = st.form_submit_button("预测")
+def predict_batch(df):
+    probabilities = model.predict_proba(df)[:, 1]
+    return probabilities
 
-if submit_single:
+# Streamlit UI
+st.title("Pregnancy Outcome Prediction")
+st.write("This tool predicts the probability of pregnancy outcome based on clinical input variables.")
+
+# Input form
+st.sidebar.header("Input Variables")
+surgical_method = st.sidebar.selectbox("Surgical Method", options=[0, 1], format_func=lambda x: "Open Surgery" if x == 0 else "Laparoscopic Surgery")
+surgical_procedure = st.sidebar.selectbox("Surgical Procedure", options=[1, 2, 3], format_func=lambda x: {1: "Tumor Resection", 2: "Unilateral Adnexectomy", 3: "Unilateral + Contralateral Tumor Resection"}[x])
+tumor_rupture = st.sidebar.selectbox("Tumor Rupture", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+comprehensive_staging = st.sidebar.selectbox("Comprehensive Staging", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+omentum_resection = st.sidebar.selectbox("Omentum Resection", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+lymphadenectomy = st.sidebar.selectbox("Lymphadenectomy", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
+staging = st.sidebar.selectbox("Staging", options=[0, 1, 2, 3, 4], format_func=lambda x: {0: "Stage IA", 1: "Stage IB", 2: "Stage IC", 3: "Stage II", 4: "Stage III"}[x])
+unilateral_bilateral = st.sidebar.selectbox("Unilateral/Bilateral", options=[0, 1], format_func=lambda x: "Unilateral" if x == 0 else "Bilateral")
+tumor_diameter = st.sidebar.selectbox("Tumor Diameter", options=[0, 1], format_func=lambda x: "<7 cm" if x == 0 else "≥7 cm")
+
+# Single prediction
+if st.sidebar.button("Predict Single Case"):
     input_data = [
-        surgical_method,
-        surgical_procedure,
-        tumor_rupture,
-        comprehensive_staging,
-        omentum_resection,
-        lymphadenectomy,
-        staging,
-        unilateral_bilateral,
-        tumor_diameter
+        surgical_method, surgical_procedure, tumor_rupture, comprehensive_staging,
+        omentum_resection, lymphadenectomy, staging, unilateral_bilateral, tumor_diameter
     ]
-    lower, upper = predict_single(input_data)
-    st.success(f"怀孕概率预测区间: [{lower:.2%}, {upper:.2%}]")
+    prob = predict_single(input_data)
+    st.write(f"Predicted Pregnancy Result Probability: {prob:.2f}")
 
-# 批量文件上传预测
-st.subheader("批量预测")
-uploaded_file = st.file_uploader("上传 CSV 文件", type=["csv"])
-if uploaded_file:
-    data = pd.read_csv(uploaded_file)
-    st.write("上传的数据：", data.head())
+    # Bootstrap for Confidence Interval
+    bootstrap_preds = [predict_single(resample(input_data)) for _ in range(1000)]
+    lower, upper = calculate_confidence_interval(bootstrap_preds)
+    st.write(f"95% Confidence Interval: [{lower:.2f}, {upper:.2f}]")
 
-    if st.button("开始批量预测"):
-        lower, upper = predict_batch(data.values)
-        data['Lower CI'] = lower
-        data['Upper CI'] = upper
-        data['Predicted Interval'] = data.apply(
-            lambda row: f"[{row['Lower CI']:.2%}, {row['Upper CI']:.2%}]", axis=1
-        )
-        st.write("预测结果：", data[['Predicted Interval']])
-        
-        # 下载预测结果
-        csv = data.to_csv(index=False)
-        st.download_button("下载预测结果", csv, "prediction_results.csv", "text/csv")
+# Batch prediction
+uploaded_file = st.file_uploader("Upload CSV File for Batch Prediction", type="csv")
+if uploaded_file is not None:
+    batch_data = pd.read_csv(uploaded_file)
+    probabilities = predict_batch(batch_data)
 
-# 页面底部版权信息
-st.markdown("---")
-st.markdown("Copyright © Shengjing Hospital of China Medical University")
+    # Add confidence intervals to the batch
+    bootstrap_preds_batch = [predict_batch(resample(batch_data)) for _ in range(1000)]
+    lower_ci, upper_ci = zip(*[calculate_confidence_interval(bootstrap_preds) for bootstrap_preds in bootstrap_preds_batch])
+    
+    batch_data["Predicted Probability"] = probabilities
+    batch_data["95% CI Lower"] = lower_ci
+    batch_data["95% CI Upper"] = upper_ci
+
+    st.write(batch_data)
+
+    # Download button
+    csv = batch_data.to_csv(index=False)
+    st.download_button(
+        label="Download Predictions with Confidence Intervals",
+        data=csv,
+        file_name="predictions_with_confidence_intervals.csv",
+        mime="text/csv"
+    )
+
+# Footer
+st.write("\n\n---")
+st.write("Copyright © Shengjing Hospital of China Medical University")
