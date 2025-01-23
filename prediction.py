@@ -2,132 +2,90 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
-from sklearn.inspection import permutation_importance
 
-# Load the trained SVM model
-model = joblib.load('svm_model.joblib')  # Ensure the model file is in the same directory or provide the correct path
+# 加载模型
+@st.cache_resource
+def load_model():
+    return joblib.load("svm_model.joblib")  # 替换为实际的模型文件路径
 
-# Title and description
-st.title("SVM-Based Fertility Outcome Prediction")
-st.markdown("""
-This application predicts fertility outcomes based on the following input variables. Select the appropriate option from the dropdown menus below:
-""")
+model = load_model()
 
-# Input form for single prediction
-st.header("Single Input Prediction")
-with st.form("single_input_form"):
-    surgical_method = st.selectbox("Surgical Method", ["0=0", "1=1"], format_func=lambda x: x.split('=')[1])
-    surgical_procedure = st.selectbox(
-        "Surgical Procedure",
-        ["1=Tumor Resection", "2=Unilateral Adnexectomy", "3=Unilateral + Contralateral Tumor Resection"],
-        format_func=lambda x: x.split('=')[1]
-    )
-    tumor_rupture = st.selectbox("Tumor Rupture", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
-    comprehensive_staging = st.selectbox(
-        "Comprehensive Staging (Ascites + Omentum + Peritoneal Biopsy)",
-        ["0=No", "1=Yes"],
-        format_func=lambda x: x.split('=')[1]
-    )
-    omentum_resection = st.selectbox("Omentum Resection", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
-    lymphadenectomy = st.selectbox("Lymphadenectomy", ["0=No", "1=Yes"], format_func=lambda x: x.split('=')[1])
-    staging = st.selectbox(
-        "Staging",
-        ["0=Stage IA", "1=Stage IB", "2=Stage IC", "3=Stage II", "4=Stage III"],
-        format_func=lambda x: x.split('=')[1]
-    )
-    unilateral_bilateral = st.selectbox("Unilateral/Bilateral", ["0=Unilateral", "1=Bilateral"], format_func=lambda x: x.split('=')[1])
-    tumor_diameter = st.selectbox("Tumor Diameter", ["0=Diameter < 7 cm", "1=Diameter ≥ 7 cm"], format_func=lambda x: x.split('=')[1])
+# 主界面
+st.title("生育预测模型")
+st.write("基于支持向量机 (SVM) 的生育结果预测模型")
+st.markdown("---")
 
-    submitted = st.form_submit_button("Predict")
+# 输入表单
+st.sidebar.header("输入参数")
+surgical_method = st.sidebar.selectbox("Surgical Method", options=["0", "1"], format_func=lambda x: "0=0" if x == "0" else "1=1")
+surgical_procedure = st.sidebar.selectbox(
+    "Surgical Procedure", options=["1", "2", "3"],
+    format_func=lambda x: "Tumor Resection=1" if x == "1" else ("Unilateral Adnexectomy=2" if x == "2" else "Unilateral + Contralateral Tumor Resection=3")
+)
+tumor_rupture = st.sidebar.selectbox("Tumor Rupture", options=["0", "1"], format_func=lambda x: "No=0" if x == "0" else "Yes=1")
+comprehensive_staging = st.sidebar.selectbox(
+    "Comprehensive Staging", options=["0", "1"], format_func=lambda x: "No=0" if x == "0" else "Yes=1"
+)
+omentum_resection = st.sidebar.selectbox("Omentum Resection", options=["0", "1"], format_func=lambda x: "No=0" if x == "0" else "Yes=1")
+lymphadenectomy = st.sidebar.selectbox("Lymphadenectomy", options=["0", "1"], format_func=lambda x: "No=0" if x == "0" else "Yes=1")
+staging = st.sidebar.selectbox(
+    "Staging", options=["0", "1", "2", "3", "4"],
+    format_func=lambda x: ["Stage IA=0", "Stage IB=1", "Stage IC=2", "Stage II=3", "Stage III=4"][int(x)]
+)
+unilateral_bilateral = st.sidebar.selectbox(
+    "Unilateral/Bilateral", options=["0", "1"], format_func=lambda x: "Unilateral=0" if x == "0" else "Bilateral=1"
+)
+tumor_diameter = st.sidebar.selectbox(
+    "Tumor Diameter", options=["0", "1"], format_func=lambda x: "<7 cm=0" if x == "0" else "≥7 cm=1"
+)
 
-if submitted:
-    # Extract numerical values from the selected options
-    input_data = np.array([[
-        int(surgical_method.split('=')[0]),
-        int(surgical_procedure.split('=')[0]),
-        int(tumor_rupture.split('=')[0]),
-        int(comprehensive_staging.split('=')[0]),
-        int(omentum_resection.split('=')[0]),
-        int(lymphadenectomy.split('=')[0]),
-        int(staging.split('=')[0]),
-        int(unilateral_bilateral.split('=')[0]),
-        int(tumor_diameter.split('=')[0])
-    ]])
+# 输入参数转为数值
+input_data = np.array([
+    int(surgical_method), int(surgical_procedure), int(tumor_rupture),
+    int(comprehensive_staging), int(omentum_resection), int(lymphadenectomy),
+    int(staging), int(unilateral_bilateral), int(tumor_diameter)
+]).reshape(1, -1)
 
-    # Predict
-    prediction = model.predict(input_data)
-    probability = model.predict_proba(input_data)
+# 在线预测
+if st.sidebar.button("预测结果"):
+    prediction = model.predict(input_data)[0]
+    prediction_proba = model.predict_proba(input_data)[0]
+    result = "Pregnant" if prediction == 1 else "Not Pregnant"
+    st.write(f"### 预测结果: {result}")
+    st.write(f"怀孕概率: {prediction_proba[1]:.2f}")
+    st.write(f"未怀孕概率: {prediction_proba[0]:.2f}")
 
-    # Display results
-    st.subheader("Prediction Result")
-    result = "Yes" if prediction[0] == 1 else "No"
-    st.write(f"**Fertility Outcome:** {result}")
-    st.write(f"**Probability:** {probability[0][prediction[0]]:.2f}")
+    # 绘制列线图
+    fig, ax = plt.subplots()
+    ax.bar(["Not Pregnant", "Pregnant"], prediction_proba, color=["blue", "green"])
+    ax.set_ylabel("概率")
+    ax.set_title("预测概率")
+    st.pyplot(fig)
 
-    # Display feature contribution (using permutation importance if available)
-    st.subheader("Variable Contribution")
-    try:
-        importance = permutation_importance(model, input_data, [prediction[0]], scoring='accuracy')
-        importance_df = pd.DataFrame({
-            'Variable': [
-                "Surgical Method", "Surgical Procedure", "Tumor Rupture",
-                "Comprehensive Staging", "Omentum Resection", "Lymphadenectomy",
-                "Staging", "Unilateral/Bilateral", "Tumor Diameter"
-            ],
-            'Importance': importance.importances_mean
-        }).sort_values(by='Importance', ascending=False)
-
-        st.write(importance_df)
-
-        # Plot feature importance
-        fig, ax = plt.subplots()
-        ax.barh(importance_df['Variable'], importance_df['Importance'])
-        ax.set_xlabel("Importance")
-        ax.set_title("Variable Contribution to Prediction")
-        st.pyplot(fig)
-    except Exception as e:
-        st.write("Unable to calculate variable contribution:", e)
-
-# File upload for batch prediction
-st.header("Batch Input Prediction")
-uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
+# 批量文件上传
+st.markdown("---")
+st.header("批量预测")
+uploaded_file = st.file_uploader("上传 CSV 文件", type="csv")
 if uploaded_file is not None:
-    # Read the uploaded CSV file
     data = pd.read_csv(uploaded_file)
+    st.write("上传的数据：")
+    st.dataframe(data)
 
-    # Ensure required columns exist
-    expected_columns = [
-        "Surgical Method", "Surgical Procedure", "Tumor Rupture",
-        "Comprehensive Staging", "Omentum Resection", "Lymphadenectomy",
-        "Staging", "Unilateral/Bilateral", "Tumor Diameter"
-    ]
+    if st.button("批量预测"):
+        predictions = model.predict(data)
+        prediction_proba = model.predict_proba(data)
+        data["Prediction"] = ["Pregnant" if p == 1 else "Not Pregnant" for p in predictions]
+        data["Pregnant Probability"] = prediction_proba[:, 1]
+        data["Not Pregnant Probability"] = prediction_proba[:, 0]
+        st.write("预测结果：")
+        st.dataframe(data)
 
-    if all(col in data.columns for col in expected_columns):
-        # Predict for batch data
-        predictions = model.predict(data[expected_columns])
-        probabilities = model.predict_proba(data[expected_columns])
+        # 下载结果文件
+        result_csv = data.to_csv(index=False).encode('utf-8')
+        st.download_button("下载预测结果", data=result_csv, file_name="predictions.csv", mime="text/csv")
 
-        # Add results to the DataFrame
-        data['Fertility Outcome'] = ["Yes" if p == 1 else "No" for p in predictions]
-        data['Probability'] = [prob[p] for prob, p in zip(probabilities, predictions)]
-
-        st.subheader("Prediction Results")
-        st.write(data)
-
-        # Plot lollipop chart
-        st.subheader("Lollipop Chart of Predictions")
-        fig, ax = plt.subplots()
-        outcomes = data['Fertility Outcome'].value_counts()
-        ax.stem(outcomes.index, outcomes.values, basefmt=" ", use_line_collection=True)
-        ax.set_ylabel("Count")
-        ax.set_title("Fertility Outcomes")
-        st.pyplot(fig)
-    else:
-        st.error(f"The uploaded file must contain the following columns: {', '.join(expected_columns)}")
-
-# Footer with copyright
-st.markdown("""
----
-**© 2025 Your Organization Name**
-""")
+# 版权信息
+st.markdown("---")
+st.markdown("版权所有 © 中国医科大学附属盛京医院")
