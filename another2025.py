@@ -52,12 +52,6 @@ if st.button("Predict Single Case"):
     st.markdown("### 🧐 **Prediction Result**")
     st.markdown(f"<h2 style='color:#FF6F61; text-align:center;'>**Predicted Pregnancy Outcome Probability**: **{prob:.2f}**</h2>", unsafe_allow_html=True)
 
-    # Use success or error messages based on probability
-    if prob > 0.5:
-        st.success("### 🟢 The predicted outcome is more likely to be successful! 🎉")
-    else:
-        st.warning("### 🟠 The predicted outcome is less likely to be successful. Please consult with your healthcare provider.")
-
 # Batch prediction
 st.subheader("📁 Batch Prediction")
 st.markdown("Upload a CSV file for batch prediction. Make sure the file matches the input format.")
