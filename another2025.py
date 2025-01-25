@@ -48,13 +48,8 @@ if st.button("Predict Single Case"):
     ]
     prob = predict_single(input_data)
     
-    # Emphasize the result
-    st.markdown("### 🔮 **Prediction Result**")
-    st.write(f"- **Predicted Pregnancy Result Probability**: **{prob:.2f}**")
-
-    # Display bar chart for single prediction
-    st.subheader("📊 Prediction Probability")
-    st.bar_chart([prob, 1 - prob], width=500, height=300, use_container_width=True)
+    st.write("### Prediction Results:")
+    st.write("- **Predicted Pregnancy Result Probability**: {:.2f}".format(prob))
 
 # Batch prediction
 st.subheader("📁 Batch Prediction")
@@ -66,14 +61,10 @@ if uploaded_file is not None:
     
     batch_data["Predicted Probability"] = probabilities
 
-    # Display batch prediction results with emphasis
-    st.markdown("### 📊 Batch Prediction Results")
-    st.write(f"The predicted probabilities for the uploaded cases are shown below.")
-    st.write(batch_data[["Predicted Probability"]])
+    st.write("### Batch Prediction Results:")
+    st.dataframe(batch_data)
 
-    # Remove line chart for batch predictions (was removed per your request)
-
-    # Download button for batch predictions
+    # Download button
     csv = batch_data.to_csv(index=False)
     st.download_button(
         label="📥 Download Predictions",
