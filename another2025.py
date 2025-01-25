@@ -71,9 +71,7 @@ if uploaded_file is not None:
     st.write(f"The predicted probabilities for the uploaded cases are shown below.")
     st.write(batch_data[["Predicted Probability"]])
 
-    # Display line chart for batch prediction
-    st.subheader("📈 Prediction Trends")
-    st.line_chart(batch_data["Predicted Probability"], width=700, height=400, use_container_width=True)
+    # Remove line chart for batch predictions (was removed per your request)
 
     # Download button for batch predictions
     csv = batch_data.to_csv(index=False)
