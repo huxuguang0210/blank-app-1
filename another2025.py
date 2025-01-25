@@ -47,7 +47,18 @@ if st.button("Predict Single Case"):
         omentum_resection, lymphadenectomy, staging, unilateral_bilateral, tumor_diameter
     ]
     prob = predict_single(input_data)
-    st.success(f"### Predicted Pregnancy Result Probability: {prob:.2f}")
+    
+    # Show predicted probability as a list
+    st.write("### Prediction Results:")
+    st.write("- **Predicted Pregnancy Result Probability**: {:.2f}".format(prob))
+
+    # Show additional information (example)
+    if prob >= 0.5:
+        st.success("The predicted outcome is more likely to be positive.")
+        st.image("positive_outcome_image.jpg", caption="Positive Outcome", width=400)
+    else:
+        st.warning("The predicted outcome is more likely to be negative.")
+        st.image("negative_outcome_image.jpg", caption="Negative Outcome", width=400)
 
 # Batch prediction
 st.subheader("📁 Batch Prediction")
@@ -59,7 +70,18 @@ if uploaded_file is not None:
     
     batch_data["Predicted Probability"] = probabilities
 
-    st.write("### Prediction Results")
+    st.write("### Batch Prediction Results:")
+    for i, row in batch_data.iterrows():
+        st.write(f"**Case {i+1}:**")
+        st.write(f"- **Predicted Probability**: {row['Predicted Probability']:.2f}")
+        
+        # Example of showing images based on prediction
+        if row["Predicted Probability"] >= 0.5:
+            st.image("positive_outcome_image.jpg", caption=f"Positive Outcome for Case {i+1}", width=400)
+        else:
+            st.image("negative_outcome_image.jpg", caption=f"Negative Outcome for Case {i+1}", width=400)
+
+    st.write("### Prediction Results Data:")
     st.dataframe(batch_data)
 
     # Download button
