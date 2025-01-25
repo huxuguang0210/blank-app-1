@@ -36,13 +36,13 @@ st.markdown(
 # Sidebar input form
 st.sidebar.header("Input Variables")
 st.sidebar.markdown("Fill in the following details:")
-surgical_method = st.sidebar.selectbox("Surgical Method", options=[0, 1], format_func=lambda x: "Open Surgery" if x == 0 else "Laparoscopic Surgery")
-surgical_procedure = st.sidebar.selectbox("Surgical Procedure", options=[1, 2, 3], format_func=lambda x: {1: "Tumor Resection", 2: "Unilateral Adnexectomy", 3: "Unilateral + Contralateral Tumor Resection"}[x])
+surgical_method = st.sidebar.selectbox("Surgical Route", options=[0, 1], format_func=lambda x: "Laparotomy" if x == 0 else "Laparoscope")
+surgical_procedure = st.sidebar.selectbox("Surgical Procedure", options=[1, 2, 3], format_func=lambda x: {1: "Unilateral Cystectomy", 2: "Unilateral Salpingo-oophorectomy", 3: "Unilateral Salpingo-oophorectomy and Contralateral Cystectomy"}[x])
 tumor_rupture = st.sidebar.selectbox("Tumor Rupture", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
 comprehensive_staging = st.sidebar.selectbox("Comprehensive Staging", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
 omentum_resection = st.sidebar.selectbox("Omentum Resection", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
 lymphadenectomy = st.sidebar.selectbox("Lymphadenectomy", options=[0, 1], format_func=lambda x: "No" if x == 0 else "Yes")
-staging = st.sidebar.selectbox("Staging", options=[0, 1, 2, 3, 4], format_func=lambda x: {0: "Stage IA", 1: "Stage IB", 2: "Stage IC", 3: "Stage II", 4: "Stage III"}[x])
+staging = st.sidebar.selectbox("Stage", options=[0, 1, 2, 3, 4], format_func=lambda x: {0: "Stage IA", 1: "Stage IB", 2: "Stage IC", 3: "Stage II", 4: "Stage III"}[x])
 unilateral_bilateral = st.sidebar.selectbox("Unilateral/Bilateral", options=[0, 1], format_func=lambda x: "Unilateral" if x == 0 else "Bilateral")
 tumor_diameter = st.sidebar.selectbox("Tumor Diameter", options=[0, 1], format_func=lambda x: "<7 cm" if x == 0 else "≥7 cm")
 
