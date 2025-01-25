@@ -2,16 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-from sklearn.utils import resample
 
 # Load trained SVM model
 model = joblib.load("svm_model.joblib")
-
-# Define function to calculate 95% Confidence Interval
-def calculate_confidence_interval(predictions, confidence=0.95):
-    lower = np.percentile(predictions, (1 - confidence) / 2 * 100)
-    upper = np.percentile(predictions, (1 + confidence) / 2 * 100)
-    return lower, upper
 
 # Function to make predictions
 def predict_single(data):
@@ -56,11 +49,6 @@ if st.button("Predict Single Case"):
     prob = predict_single(input_data)
     st.success(f"### Predicted Pregnancy Result Probability: {prob:.2f}")
 
-    # Bootstrap for Confidence Interval
-    bootstrap_preds = [predict_single(resample(input_data)) for _ in range(1000)]
-    lower, upper = calculate_confidence_interval(bootstrap_preds)
-    st.info(f"### 95% Confidence Interval: [{lower:.2f}, {upper:.2f}]")
-
 # Batch prediction
 st.subheader("📁 Batch Prediction")
 st.markdown("Upload a CSV file for batch prediction. Make sure the file matches the input format.")
@@ -68,14 +56,8 @@ uploaded_file = st.file_uploader("Upload CSV File", type="csv")
 if uploaded_file is not None:
     batch_data = pd.read_csv(uploaded_file)
     probabilities = predict_batch(batch_data)
-
-    # Add confidence intervals to the batch
-    bootstrap_preds_batch = [predict_batch(resample(batch_data)) for _ in range(1000)]
-    lower_ci, upper_ci = zip(*[calculate_confidence_interval(bootstrap_preds) for bootstrap_preds in bootstrap_preds_batch])
     
     batch_data["Predicted Probability"] = probabilities
-    batch_data["95% CI Lower"] = lower_ci
-    batch_data["95% CI Upper"] = upper_ci
 
     st.write("### Prediction Results")
     st.dataframe(batch_data)
@@ -83,14 +65,14 @@ if uploaded_file is not None:
     # Download button
     csv = batch_data.to_csv(index=False)
     st.download_button(
-        label="📥 Download Predictions with Confidence Intervals",
+        label="📥 Download Predictions",
         data=csv,
-        file_name="predictions_with_confidence_intervals.csv",
+        file_name="predictions.csv",
         mime="text/csv"
     )
 
 # Footer
-st.markdown("""
----
-© Shengjing Hospital of China Medical University
+st.markdown(""" 
+--- 
+© Shengjing Hospital of China Medical University 
 """, unsafe_allow_html=True)
