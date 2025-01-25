@@ -48,8 +48,15 @@ if st.button("Predict Single Case"):
     ]
     prob = predict_single(input_data)
     
-    st.write("### Prediction Results:")
-    st.write("- **Predicted Pregnancy Result Probability**: {:.2f}".format(prob))
+    # Emphasize the result using markdown and emoji
+    st.markdown("### 🧐 **Prediction Result**")
+    st.markdown(f"<h2 style='color:#FF6F61; text-align:center;'>**Predicted Pregnancy Outcome Probability**: **{prob:.2f}**</h2>", unsafe_allow_html=True)
+
+    # Use success or error messages based on probability
+    if prob > 0.5:
+        st.success("### 🟢 The predicted outcome is more likely to be successful! 🎉")
+    else:
+        st.warning("### 🟠 The predicted outcome is less likely to be successful. Please consult with your healthcare provider.")
 
 # Batch prediction
 st.subheader("📁 Batch Prediction")
@@ -61,8 +68,11 @@ if uploaded_file is not None:
     
     batch_data["Predicted Probability"] = probabilities
 
-    st.write("### Batch Prediction Results:")
-    st.dataframe(batch_data)
+    st.markdown("### 📊 **Batch Prediction Results**")
+    st.write(f"Below are the predicted probabilities for each case in your batch:")
+
+    # Highlight the output with a bold heading and color
+    st.dataframe(batch_data.style.applymap(lambda x: 'background-color: yellow' if x > 0.5 else '', subset=["Predicted Probability"]))
 
     # Download button
     csv = batch_data.to_csv(index=False)
