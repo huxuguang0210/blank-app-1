@@ -78,7 +78,7 @@ if uploaded_file is not None:
     )
 
 # Footer
-st.markdown(""" 
---- 
-© Shengjing Hospital of China Medical University 
-""", unsafe_allow_html=True)
+#st.markdown(""" 
+#--- 
+#© Shengjing Hospital of China Medical University 
+#""", unsafe_allow_html=True)
