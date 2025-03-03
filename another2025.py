@@ -17,7 +17,7 @@ def predict_batch(df):
 
 # Streamlit UI
 st.set_page_config(page_title="Pregnancy Outcome Prediction", page_icon="🤰", layout="wide")
-st.title("🤰 Pregnancy Outcome Prediction Tool")
+#st.title("🤰 Pregnancy Outcome Prediction Tool")
 st.markdown(
     """
     Welcome to the **Pregnancy Outcome Prediction Tool**. 
